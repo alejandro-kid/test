@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id         Int     @id @default(autoincrement())
+  first_name String  @db.VarChar(255)
+  last_name  String  @db.VarChar(255)
+  email      String  @unique @db.VarChar(255)
+  address    String  @db.VarChar(255)
+  lat        String? @db.VarChar(255)
+  lon        String? @db.VarChar(255)
+  rol_id     Int
+  passwd     String  @db.VarChar(255)
+  active     Boolean
+  roles      Role    @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  orders     Order[]
+
+  @@map("customers")
+}
+
+model Detail {
+  id         Int     @id @default(autoincrement())
+  product_id Int
+  feature    String  @db.VarChar(255)
+  value      String  @db.VarChar(255)
+  products   Product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+
+  @@map("details")
+}
+
+model Image {
+  id          Int     @id @default(autoincrement())
+  product_id  Int
+  image       String  @db.VarChar(255)
+  description String  @db.VarChar(255)
+  products   Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+
+  @@map("images")
+}
+
+model Order {
+  id          Int        @id @default(autoincrement())
+  order_date  DateTime   @db.Date
+  customer_id Int
+  amount      Decimal    @db.Decimal(10, 2)
+  customers   Customer   @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  payments    Payment[]
+  shopping    Shopping[]
+
+  @@map("orders")
+}
+
+model PaymentMethod {
+  id          Int       @id @default(autoincrement())
+  method      String    @db.VarChar(255)
+  description String    @db.VarChar(255)
+  payments    Payment[]
+
+  @@map("payment_methods")
+}
+
+model Payment {
+  id                Int           @id @default(autoincrement())
+  payment_date      DateTime      @db.Date
+  order_id          Int
+  amount            Decimal       @db.Decimal(10, 2)
+  stage_id          Int
+  payment_method_id Int
+  orders            Order         @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  payment_methods   PaymentMethod @relation(fields: [payment_method_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  stages            Stage         @relation(fields: [stage_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+
+  @@map("payments")
+}
+
+model Product {
+  id                 Int                @id @default(autoincrement())
+  product            String             @unique @db.VarChar(255)
+  price              Decimal            @db.Decimal(10, 2)
+  description        String             @db.VarChar(255)
+  details            Detail[]
+  sales_notification SaleNotification[]
+  shopping           Shopping[]
+  supplies           Supply[]
+  images             Image[]
+  stocks             Stock[]
+
+  @@map("products")
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  rol         String     @unique @db.VarChar(255)
+  description String?    @db.VarChar(255)
+  customers   Customer[]
+  stores      Store[]
+
+  @@map("roles")
+}
+
+model SaleNotification {
+  id                Int      @id @default(autoincrement())
+  store_id          Int
+  product_id        Int
+  date_notification DateTime @db.Date
+  observations      String?  @db.VarChar(255)
+  products          Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  stores            Store    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+
+  @@map("sales_notification")
+}
+
+model Shopping {
+  id         Int     @id @default(autoincrement())
+  order_id   Int
+  product_id Int
+  quantity   Int
+  price      Decimal @db.Decimal(10, 2)
+  orders     Order   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  products   Product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+
+  @@map("shopping")
+}
+
+model Stage {
+  id          Int       @id @default(autoincrement())
+  stage       String    @unique @db.VarChar(255)
+  description String    @db.VarChar(255)
+  payments    Payment[]
+
+  @@map("stages")
+}
+
+model Stock {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  quantity   Int
+  products    Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  supplies   Supply[]
+
+  @@map("stocks")
+}
+
+model Store {
+  id                 Int                @id @default(autoincrement())
+  store_name         String             @db.VarChar(255)
+  email              String             @db.VarChar(255)
+  address            String             @db.VarChar(255)
+  lat                String?            @db.VarChar(255)
+  lon                String?            @db.VarChar(255)
+  rol_id             Int
+  passwd             String?            @db.VarChar(255)
+  active             Boolean
+  sales_notification SaleNotification[]
+  roles              Role               @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  supplies           Supply[]
+
+  @@map("stores")
+}
+
+model Supply {
+  id          Int      @id @default(autoincrement())
+  store_id    Int
+  product_id  Int
+  stock_id    Int
+  supply_date DateTime @db.Date
+  quantity    Int
+  unit_price  Decimal  @db.Decimal(10, 2)
+  products    Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  stock       Stock    @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  stores      Store    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+
+  @@map("supplies")
+}
