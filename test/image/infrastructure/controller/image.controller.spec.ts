@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImageController } from '../../../../src/image/infrastructure/controller/image.controller';
 import { ImageService } from '../../../../src/image/application/image.service';
+import { PrismaService } from '../../../../src/prisma/application/prisma.service';
+import { Image } from '../../../../src/image/domain/image.entity';
 
 describe('ImageController', () => {
   let controller: ImageController;
@@ -8,7 +10,13 @@ describe('ImageController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ImageController],
-      providers: [ImageService],
+      providers: [
+        PrismaService,
+        {
+          provide: ImageService,
+          useValue: Image,
+        },
+      ],
     }).compile();
 
     controller = module.get<ImageController>(ImageController);
