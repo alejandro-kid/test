@@ -7,29 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Customer {
-  id         Int     @id @default(autoincrement())
-  first_name String  @db.VarChar(255)
-  last_name  String  @db.VarChar(255)
-  email      String  @unique @db.VarChar(255)
-  address    String  @db.VarChar(255)
-  lat        String? @db.VarChar(255)
-  lon        String? @db.VarChar(255)
-  rol_id     Int
-  passwd     String  @db.VarChar(255)
-  active     Boolean
-  roles      Role    @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  orders     Order[]
-
-  @@map("customers")
-}
-
 model Detail {
   id         Int     @id @default(autoincrement())
   product_id Int
   feature    String  @db.VarChar(255)
   value      String  @db.VarChar(255)
-  products   Product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  products   Product @relation(fields: [product_id], references: [id], onDelete: NoAction)
 
   @@map("details")
 }
@@ -39,19 +22,19 @@ model Image {
   product_id  Int
   image       String  @db.VarChar(255)
   description String  @db.VarChar(255)
-  products   Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  products    Product @relation(fields: [product_id], references: [id], onDelete: NoAction)
 
   @@map("images")
 }
 
 model Order {
-  id          Int        @id @default(autoincrement())
-  order_date  DateTime   @db.Date
-  customer_id Int
-  amount      Decimal    @db.Decimal(10, 2)
-  customers   Customer   @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  payments    Payment[]
-  shopping    Shopping[]
+  id         Int        @id @default(autoincrement())
+  order_date DateTime   @db.Date
+  user_id    Int
+  amount     Decimal    @db.Decimal(10, 2)
+  users      User       @relation(fields: [user_id], references: [id], onDelete: NoAction)
+  payments   Payment[]
+  shopping   Shopping[]
 
   @@map("orders")
 }
@@ -72,9 +55,9 @@ model Payment {
   amount            Decimal       @db.Decimal(10, 2)
   stage_id          Int
   payment_method_id Int
-  orders            Order         @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  payment_methods   PaymentMethod @relation(fields: [payment_method_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  stages            Stage         @relation(fields: [stage_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  orders            Order         @relation(fields: [order_id], references: [id], onDelete: NoAction)
+  payment_methods   PaymentMethod @relation(fields: [payment_method_id], references: [id], onDelete: NoAction)
+  stages            Stage         @relation(fields: [stage_id], references: [id], onDelete: NoAction)
 
   @@map("payments")
 }
@@ -85,33 +68,32 @@ model Product {
   price              Decimal            @db.Decimal(10, 2)
   description        String             @db.VarChar(255)
   details            Detail[]
+  images             Image[]
   sales_notification SaleNotification[]
   shopping           Shopping[]
-  supplies           Supply[]
-  images             Image[]
   stocks             Stock[]
+  supplies           Supply[]
 
   @@map("products")
 }
 
-model Role {
-  id          Int        @id @default(autoincrement())
-  rol         String     @unique @db.VarChar(255)
-  description String?    @db.VarChar(255)
-  customers   Customer[]
-  stores      Store[]
+model Rol {
+  id          Int     @id @default(autoincrement())
+  rol         String  @unique @db.VarChar(255)
+  description String? @db.VarChar(255)
+  users       User[]
 
   @@map("roles")
 }
 
 model SaleNotification {
   id                Int      @id @default(autoincrement())
-  store_id          Int
+  user_id           Int
   product_id        Int
   date_notification DateTime @db.Date
   observations      String?  @db.VarChar(255)
-  products          Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  stores            Store    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  products          Product  @relation(fields: [product_id], references: [id], onDelete: NoAction)
+  users             User     @relation(fields: [user_id], references: [id], onDelete: NoAction)
 
   @@map("sales_notification")
 }
@@ -122,8 +104,8 @@ model Shopping {
   product_id Int
   quantity   Int
   price      Decimal @db.Decimal(10, 2)
-  orders     Order   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  products   Product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  orders     Order   @relation(fields: [order_id], references: [id], onDelete: NoAction)
+  products   Product @relation(fields: [product_id], references: [id], onDelete: NoAction)
 
   @@map("shopping")
 }
@@ -141,40 +123,51 @@ model Stock {
   id         Int      @id @default(autoincrement())
   product_id Int
   quantity   Int
-  products    Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  products   Product  @relation(fields: [product_id], references: [id], onDelete: NoAction)
   supplies   Supply[]
 
   @@map("stocks")
 }
 
-model Store {
-  id                 Int                @id @default(autoincrement())
-  store_name         String             @db.VarChar(255)
-  email              String             @db.VarChar(255)
-  address            String             @db.VarChar(255)
-  lat                String?            @db.VarChar(255)
-  lon                String?            @db.VarChar(255)
-  rol_id             Int
-  passwd             String?            @db.VarChar(255)
-  active             Boolean
-  sales_notification SaleNotification[]
-  roles              Role               @relation(fields: [rol_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  supplies           Supply[]
-
-  @@map("stores")
-}
-
 model Supply {
   id          Int      @id @default(autoincrement())
-  store_id    Int
+  user_id     Int
   product_id  Int
   stock_id    Int
   supply_date DateTime @db.Date
   quantity    Int
   unit_price  Decimal  @db.Decimal(10, 2)
-  products    Product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  stock       Stock    @relation(fields: [stock_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
-  stores      Store    @relation(fields: [store_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  products    Product  @relation(fields: [product_id], references: [id], onDelete: NoAction)
+  stock       Stock    @relation(fields: [stock_id], references: [id], onDelete: NoAction)
+  users       User     @relation(fields: [user_id], references: [id], onDelete: NoAction)
 
   @@map("supplies")
+}
+
+model Client {
+  id         Int     @id(map: "customers_pkey") @default(autoincrement())
+  first_name String  @db.VarChar(255)
+  last_name  String  @db.VarChar(255)
+  address    String  @db.VarChar(255)
+  lat        String? @db.VarChar(255)
+  lon        String? @db.VarChar(255)
+  user_id    Int
+  users      User    @relation(fields: [user_id], references: [id], onDelete: NoAction, map: "customers_user_id_fkey")
+
+  @@map("clients")
+}
+
+model User {
+  id                 Int                @id @default(autoincrement())
+  email              String             @unique @db.VarChar(255)
+  passwd             String             @db.VarChar(255)
+  active             Boolean            @default(true)
+  rol_id             Int
+  clients            Client[]
+  orders             Order[]
+  sales_notification SaleNotification[]
+  supplies           Supply[]
+  roles              Rol                @relation(fields: [rol_id], references: [id], onDelete: NoAction)
+
+  @@map("users")
 }
