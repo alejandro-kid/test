@@ -8,6 +8,7 @@ import { ImageModule } from './image/infrastructure/image.module';
 import { PaymentMethodModule } from './payment-method/infrastructure/payment-method.module';
 import { StageModule } from './stage/infrastructure/stage.module';
 import { StockModule } from './stock/infrastructure/stock.module';
+import { RolModule } from './rol/infrastructure/rol.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { StockModule } from './stock/infrastructure/stock.module';
     PaymentMethodModule,
     StageModule,
     StockModule,
+    RolModule,
   ],
   controllers: [AppController],
   providers: [AppService],

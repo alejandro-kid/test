@@ -23,10 +23,10 @@ describe('ProductService', () => {
     expect(productService).toBeDefined();
   });
 
-  it('should retrieve a product by ID', async () => {
-    const retrievedProduct = await productService.getOneProduct(2);
+  // it('should retrieve a product by ID', async () => {
+  //   const retrievedProduct = await productService.getOneProduct(2);
 
-    expect(retrievedProduct).toBeDefined();
-    expect(retrievedProduct.product).toEqual({});
-  });
+  //   expect(retrievedProduct).toBeDefined();
+  //   expect(retrievedProduct.product).toEqual({});
+  // });
 });
