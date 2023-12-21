@@ -1,62 +1,77 @@
-import { INestApplication } from '@nestjs/common';
-import { RolService } from '../../src/rol/application/rol.service';
-import { Test } from '@nestjs/testing';
-import { RolModule } from '../../src/rol/infrastructure/rol.module';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
-// import { Rol } from '../../src/rol/domain/rol.entity';
+import { AppModule } from '../../src/app.module';
 
-describe('Rol', () => {
-  let app: INestApplication;
-
-  const rol = {
-    id: 4,
-    rol: 'Tester',
-    description: 'Testing role',
-  };
-
-  const rolService = {
-    findAll: () => ['test'],
-    findOne: (id) => ['test'],
-    create: (rol) => ['test'],
-  };
+describe('RolController (e2e)', () => {
+  let app;
+  let createRolId;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [RolModule],
-    })
-      .overrideProvider(RolService)
-      .useValue(rolService)
-      .compile();
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
 
-    app = moduleRef.createNestApplication();
+    app = moduleFixture.createNestApplication();
     await app.init();
-  });
-
-  it(`/GET roles`, () => {
-    return request(app.getHttpServer()).get('/roles').expect(200).expect({
-      data: rolService.findAll(),
-    });
-  });
-
-  it(`GET rol`, (id) => {
-    return request(app.getHttpServer())
-      .get('/roles/id')
-      .expect(200)
-      .expect({
-        data: rolService.findOne(id),
-      });
-  });
-
-  it(`POS rol`, (rol) => {
-    return request(app.getHttpServer())
-      .post('/roles')
-      .expect(201)
-      .expect({
-        data: rolService.create(rol),
-      });
   });
 
   afterAll(async () => {
     await app.close();
+  });
+
+  it('should create a rol', async () => {
+    const rol = {
+      rol: 'Testing',
+      description: 'An example rol for testing',
+    };
+
+    const { body } = await request(app.getHttpServer())
+      .post('/roles')
+      .send(rol)
+      .expect(201);
+
+    expect(body).toBeDefined();
+    expect(body.rol).toEqual(rol.rol);
+
+    createRolId = body.id;
+  });
+
+  it('should get all roles', async () => {
+    const { body } = await request(app.getHttpServer())
+      .get('/roles')
+      .expect(200);
+
+    expect(body).toBeDefined();
+    expect(body.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should get a rol by ID', async () => {
+    const { body } = await request(app.getHttpServer())
+      .get(`/roles/${createRolId}`)
+      .expect(200);
+
+    expect(body).toBeDefined();
+    expect(body.rol).toEqual('Testing');
+  });
+
+  it('should update a rol', async () => {
+    const updateRol = {
+      rol: 'UpdatedTest',
+      description: 'An updated rol for testing',
+    };
+
+    const { body } = await request(app.getHttpServer())
+      .patch(`/roles/${createRolId}`)
+      .send(updateRol)
+      .expect(200);
+
+    expect(body).toBeDefined();
+    expect(body.rol).toEqual(updateRol.rol);
+  });
+
+  it('should deleted a rol', async () => {
+    await request(app.getHttpServer())
+      .delete(`/roles/${createRolId}`)
+      .expect(200);
   });
 });
