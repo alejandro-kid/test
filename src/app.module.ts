@@ -9,6 +9,7 @@ import { PaymentMethodModule } from './payment-method/infrastructure/payment-met
 import { StageModule } from './stage/infrastructure/stage.module';
 import { StockModule } from './stock/infrastructure/stock.module';
 import { RolModule } from './rol/infrastructure/rol.module';
+import { UserModule } from './user/infrastructure/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RolModule } from './rol/infrastructure/rol.module';
     StageModule,
     StockModule,
     RolModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
